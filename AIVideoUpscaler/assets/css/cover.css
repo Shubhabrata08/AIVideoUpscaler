@@ -55,6 +55,4 @@ body {
 .backimg
 {
   background-image: url('../images/backdrop.png');
-  background-repeat:no-repeat ;
-  background-size: cover;
 }
