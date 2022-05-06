@@ -58,3 +58,7 @@ body {
   background-repeat:no-repeat ;
   background-size: cover;
 }
+.hideDiv
+{
+  size: 0;
+}
