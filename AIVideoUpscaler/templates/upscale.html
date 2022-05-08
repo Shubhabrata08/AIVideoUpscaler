@@ -5,14 +5,16 @@
 <div class="card-body" style="background-color: #1b2137 ;">
     <div class="card-title p-2"><h3>Upload your file</h3></div>
     <div class="input-group mb-3 card-text" >
-        <form action="startprocess/" id="uploadForm" style="width: 100%;" enctype="multipart/form-data" method="post">
+        <form  id="uploadForm" style="width: 100%;" enctype="multipart/form-data" method="post">
             {% csrf_token %}
         <input type="file" class="form-control mt-2 mb-2" id="inputGroupFile02" name="vid" required="true">
         <div class="progress mt-3 invisible" id="uploadProgress" style="width:100%;" >
             <!-- <div class="progress-bar " role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" >25%</div> -->
-          </div>
-          
-        <div class="p-2" style="display:flex; justify-content:space-between;">
+        </div>
+    </form>
+        <form action="startprocess/" id="StartBtnForm" style="width: 100%;" method="post">  
+            {% csrf_token %}
+            <div class="p-2" style="display:flex; justify-content:space-between;">
             <div style="display: flex; flex-direction: column; width: 50%;">
                 <label for="customRange3" class="form-label mt-2" style="text-align: left;"><h5>Choose Scaling multipier:</h5></label>
                 <input type="range" class="form-range" min="0" max="2" step="1" id="customRange3" name="scalingValue">

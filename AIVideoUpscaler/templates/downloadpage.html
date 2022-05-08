@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="card border-5 rounded" >
+<div class="card-body" style="background-color: #1b2137 ;">
+    <div class="card-title p-2"><h3>Please wait...</h3></div>
+    <div class="input-group mb-3 card-text" >
+        <div class="progress mt-3" id="AIProgress" style="width:100%;" >
+            <div class="progress-bar " role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" >25%</div>
+          </div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content:space-around">
+                <!-- <button type="button" class="btn btn-danger invisible" id="cancelBtn">Cancel</button> -->
+            <!-- </div>
+            <div style="display: flex; flex-direction: column; justify-content:space-around"> -->
+                <button type="submit" class="btn btn-primary disabled" id="uploadBtnSubmit">Download</button>
+            </div>
+        </div>
+  </div>
+<script>
+    // document.getElementById("upscaleNav").classList.add("active");
+    setInterval(2000)
+    {
+
+        $.ajax({
+            type: "GET",
+    dataType: "json",
+    url:"/progressupdate/",
+    success: function(data)
+    {
+        alert("i got data now i will parse it as i want to display it");
+    },
+    })
+}
+</script>
+{% endblock %}

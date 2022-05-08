@@ -8,20 +8,26 @@ from math import ceil
 from cv2 import INTER_LINEAR
 from cv2 import INTER_CUBIC
 from cv2 import waitKey
+import json
+import os
 progress_percent=0
 # Create your views here.
 def home(request):
     return render(request,'index.html')
 lastFileName=''
+
 def upscale(request):
-    if request=='POST':
-        return render(request,'about.html')
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         uploaded_file=request.FILES['videodata']
         print(uploaded_file.name)
         print(uploaded_file.size)
         lastFileName=uploaded_file.name
         fs=FileSystemStorage()
+        fileList=fs.listdir('')
+        for file in fileList[1]:
+            # print(file)
+            if fs.exists(file):
+                fs.delete(file)
         fs.save(uploaded_file.name,uploaded_file)
         # fs.delete(uploaded_file.name)
         return render(request,'about.html')
@@ -64,6 +70,8 @@ def upsamplevideo(videoFilePath,scale):
         f,imgFrame=videoObj.read()
         upsampledFrame=upsampleFSRCNN(MODEL_PATH,imgFrame,scale)
         upsampledVideoObj.write(upsampledFrame)
+        progress_percent=k/frameCount
+        progress_percent=progress_percent
         print(k)
         k+=1
     upsampledVideoObj.release()
@@ -74,6 +82,10 @@ def upsamplevideo(videoFilePath,scale):
 def startprocess(request):
     scaleFactor=request.POST["scalingValue"]
     scaleFactor=int(scaleFactor)
-    return HttpResponse(scaleFactor)
+    upsamplevideo()
+    return render(request,'downloadpage.html')
     upsamplevideo('../media/'+lastFileName,scaleFactor)
+
+def progressupdate(request):
+    return JsonResponse({'progress':progress_percent},safe=False)
     

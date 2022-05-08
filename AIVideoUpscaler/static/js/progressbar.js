@@ -58,7 +58,7 @@ input.addEventListener('change',()=>{
             // alertBox.innerHTML = `<div class="alert alert-success" role="alert">
             //                         Successfully uploaded the image below
             //                     </div>`
-            cancelBtn.classList.add('invisible')
+            // cancelBtn.classList.add('invisible')
         },
         error: function(error){
             console.log(error)
