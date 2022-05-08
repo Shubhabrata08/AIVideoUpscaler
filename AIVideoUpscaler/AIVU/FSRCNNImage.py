@@ -1,36 +1,9 @@
-from distutils.command.upload import upload
-from django.http import HttpResponse
-from django.shortcuts import render
-from django.core.files.storage import FileSystemStorage
-from django.http import JsonResponse
 import cv2
 from math import ceil
 from cv2 import INTER_LINEAR
 from cv2 import INTER_CUBIC
 from cv2 import waitKey
-progress_percent=0
-# Create your views here.
-def home(request):
-    return render(request,'index.html')
-lastFileName=''
-def upscale(request):
-    if request=='POST':
-        return render(request,'about.html')
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        uploaded_file=request.FILES['videodata']
-        print(uploaded_file.name)
-        print(uploaded_file.size)
-        lastFileName=uploaded_file.name
-        fs=FileSystemStorage()
-        fs.save(uploaded_file.name,uploaded_file)
-        # fs.delete(uploaded_file.name)
-        return render(request,'about.html')
-    return render(request,'upscale.html')
-
-def about(request):
-    return render(request,'about.html')
-
-
+import matplotlib.pyplot as plt
 MODEL_PATH='FSRCNN_x4.pb'
 def upsampleFSRCNN(modelPath,img,scale):
     sr = cv2.dnn_superres.DnnSuperResImpl_create()
@@ -70,10 +43,3 @@ def upsamplevideo(videoFilePath,scale):
     videoObj.release()
     cv2.destroyAllWindows()
 # upsamplevideo('test2.mp4',4)
-
-def startprocess(request):
-    scaleFactor=request.POST["scalingValue"]
-    scaleFactor=int(scaleFactor)
-    return HttpResponse(scaleFactor)
-    upsamplevideo('../media/'+lastFileName,scaleFactor)
-    
