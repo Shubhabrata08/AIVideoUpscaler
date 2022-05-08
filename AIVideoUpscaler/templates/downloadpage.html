@@ -13,7 +13,13 @@
                 <!-- <button type="button" class="btn btn-danger invisible" id="cancelBtn">Cancel</button> -->
             <!-- </div>
             <div style="display: flex; flex-direction: column; justify-content:space-around"> -->
-                <button type="button" class="btn btn-primary disabled" id="downloadBtn">Download</button>
+                <!-- <form action="{% static '../media/output.mp4' %}"> -->
+                    <button type="button" style="width:max-content;align-self: center;" class="btn btn-primary disabled" id="downloadBtn" >
+                        <a style="all:unset;" href="{% static '../media/output.mp4' %}"download>
+                        Download
+                    <!-- </a> -->
+                    <!-- </button> -->
+                </form>
             </div>
         </div>
   </div>
@@ -64,7 +70,10 @@
 </script>
 <script>
     document.getElementById("downloadBtn").addEventListener('click',()=>{
-        alert("Sending download link")
+        // alert("Sending download link")
     })
+</script>
+<script>
+    document.getElementById("upscaleNav").classList.add("active");
 </script>
 {% endblock %}

@@ -1,5 +1,3 @@
-from distutils.command.upload import upload
-from fileinput import filename
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.core.files.storage import FileSystemStorage
@@ -11,6 +9,8 @@ from cv2 import INTER_CUBIC
 from cv2 import waitKey
 import json
 import os
+import mimetypes
+
 from  django.conf import settings
 # Create your views here.
 def home(request):
@@ -18,6 +18,7 @@ def home(request):
 lastFileName=''
 progress_percent=0
 currentScaleFactor=2
+
 def upscale(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         uploaded_file=request.FILES['videodata']
@@ -51,6 +52,12 @@ def upsampleFSRCNN(modelPath,img,scale):
     # cv2.imwrite('resultResize.png',img)
     return result
 def upsamplevideo(videoFilePath,scale):
+    fs=FileSystemStorage()
+    fileList=fs.listdir('')
+    for fl in fileList[1]:
+        # print(file)
+        if fs.exists(fl) and fl!=videoFilePath:
+            fs.delete(fl)
     extraFilePath=os.path.join(settings.BASE_DIR,'media\\')
     videoFilePath=extraFilePath+videoFilePath
     print(videoFilePath)
@@ -64,7 +71,6 @@ def upsamplevideo(videoFilePath,scale):
     MODEL_PATH=os.path.join(settings.BASE_DIR,'static\\models\\')
     print(width,height,fourcc,fps)
     print(MODEL_PATH)
-    upsampledVideoObj= cv2.VideoWriter(os.path.join(settings.BASE_DIR,'media\\output.mp4'),fourcc,fps,(width*scale,height*scale)) 
     if scale==2:
         MODEL_PATH+="FSRCNN_x4.pb"
     elif scale==1:
@@ -74,10 +80,13 @@ def upsamplevideo(videoFilePath,scale):
     f=1
     k=1
     scale+=2
+    upsampledVideoObj= cv2.VideoWriter(os.path.join(settings.BASE_DIR,'media\\output.mp4'),fourcc,fps,(int(width*scale),int(height*scale))) 
     global progress_percent
     while k<=frameCount:
         f,imgFrame=videoObj.read()
         upsampledFrame=upsampleFSRCNN(MODEL_PATH,imgFrame,scale)
+        # cv2.imshow("Test",upsampledFrame)
+        # waitKey(1000)
         upsampledVideoObj.write(upsampledFrame)
         progress_percent=(k/frameCount)*100
         print(progress_percent)
@@ -100,6 +109,8 @@ def startscaling(request):
     fileNames=(fs.listdir(''))[1]
     file=fileNames[0]
     print(file)
+    if(file=="output.mp4"):
+        return HttpResponse("Failure")
     upsamplevideo(file,currentScaleFactor)
     print(progress_percent)
     return HttpResponse("Success")
@@ -111,3 +122,12 @@ def progressupdate(request):
     return JsonResponse(data)
     return HttpResponse(progress_percent)
     
+def download_file(request):
+    file_path = os.path.join(settings.BASE_DIR,'media\\')
+    filename = "output.mp4"
+    file_path+=filename
+    fl = open(file_path, 'r',errors="ignore")
+    mime_type, _ = mimetypes.guess_type(file_path)
+    response = HttpResponse(fl, content_type='application/vnd.mp4')
+    response['Content-Disposition'] = "attachment; filename=%s" % filename
+    return response

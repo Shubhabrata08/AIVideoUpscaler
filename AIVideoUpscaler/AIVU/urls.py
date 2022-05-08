@@ -8,4 +8,5 @@ urlpatterns = [
     path('upscale/startprocess/', views.startprocess,name='startprocess'),
     path('progressupdate/',views.progressupdate,name='progressupdate'),
     path('startscaling/',views.startscaling,name='startscaling'),
+    path('upscale/startprocess/download',views.download_file,name='download')
 ]
