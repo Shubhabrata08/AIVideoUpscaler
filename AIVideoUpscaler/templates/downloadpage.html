@@ -5,32 +5,66 @@
 <div class="card-body" style="background-color: #1b2137 ;">
     <div class="card-title p-2"><h3>Please wait...</h3></div>
     <div class="input-group mb-3 card-text" >
-        <div class="progress mt-3" id="AIProgress" style="width:100%;" >
-            <div class="progress-bar " role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" >25%</div>
+        <div class="progress mt-3" style="width:100%;" >
+            <div class="progress-bar " id="AIProgress"  role="progressbar"  aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" ></div>
           </div>
             </div>
             <div style="display: flex; flex-direction: column; justify-content:space-around">
                 <!-- <button type="button" class="btn btn-danger invisible" id="cancelBtn">Cancel</button> -->
             <!-- </div>
             <div style="display: flex; flex-direction: column; justify-content:space-around"> -->
-                <button type="submit" class="btn btn-primary disabled" id="uploadBtnSubmit">Download</button>
+                <button type="button" class="btn btn-primary disabled" id="downloadBtn">Download</button>
             </div>
         </div>
   </div>
 <script>
-    // document.getElementById("upscaleNav").classList.add("active");
-    setInterval(2000)
-    {
-
-        $.ajax({
-            type: "GET",
-    dataType: "json",
-    url:"/progressupdate/",
+    $.ajax({
+    type: "POST",
+    data: {csrfmiddlewaretoken: '{{ csrf_token}}'},
+    url:"/startscaling/",
     success: function(data)
     {
-        alert("i got data now i will parse it as i want to display it");
+        console.log(data);
     },
     })
-}
+</script>
+<script>
+    (function worker() {
+        $.ajax({
+        type:"GET",
+        dataType:"json",
+        url: '/progressupdate/', 
+        success: function(data) {
+            console.log(data['progress'])
+            // percentage=JSON.stringify(data)
+            // console.log(percentage)
+            var num=parseInt(data['progress'])
+            console.log(num)
+            document.getElementById("AIProgress").style.width=(String(num).concat("%"))
+            document.getElementById("AIProgress").innerText=(String(num).concat("%"))
+            if(num==100)
+            {
+                document.getElementById("downloadBtn").classList.remove("disabled")
+            }
+            else
+            {
+                document.getElementById("downloadBtn").classList.add("disabled")
+            }
+            // console.log(String(data[0].progress))
+            // $('#AIProgress').val(data[0].progress)
+            // $('#AIProgress').css("width",toString(data[0].progress))
+
+        },
+        complete: function(data) {
+        // Schedule the next request when the current one's complete
+        setTimeout(worker, 250);
+        }
+        });
+    })();
+</script>
+<script>
+    document.getElementById("downloadBtn").addEventListener('click',()=>{
+        alert("Sending download link")
+    })
 </script>
 {% endblock %}

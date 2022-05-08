@@ -7,4 +7,5 @@ urlpatterns = [
     path('about/', views.about,name='about'),
     path('upscale/startprocess/', views.startprocess,name='startprocess'),
     path('progressupdate/',views.progressupdate,name='progressupdate'),
+    path('startscaling/',views.startscaling,name='startscaling'),
 ]

@@ -1,4 +1,5 @@
 from distutils.command.upload import upload
+from fileinput import filename
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.core.files.storage import FileSystemStorage
@@ -10,12 +11,13 @@ from cv2 import INTER_CUBIC
 from cv2 import waitKey
 import json
 import os
-progress_percent=0
+from  django.conf import settings
 # Create your views here.
 def home(request):
     return render(request,'index.html')
 lastFileName=''
-
+progress_percent=0
+currentScaleFactor=2
 def upscale(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         uploaded_file=request.FILES['videodata']
@@ -42,37 +44,43 @@ def upsampleFSRCNN(modelPath,img,scale):
     sr = cv2.dnn_superres.DnnSuperResImpl_create()
     path = modelPath
     sr.readModel(path)
-    sr.setModel("fsrcnn", 4) # set the model by passing the value and the upsampling ratio
+    sr.setModel("fsrcnn", scale) # set the model by passing the value and the upsampling ratio
     result = sr.upsample(img) # upscale the input image
     cv2.imwrite('result.png',result)
     # img=cv2.resize(img,dsize=(0,0),fx=4,fy=4,interpolation=INTER_CUBIC)
     # cv2.imwrite('resultResize.png',img)
     return result
 def upsamplevideo(videoFilePath,scale):
+    extraFilePath=os.path.join(settings.BASE_DIR,'media\\')
+    videoFilePath=extraFilePath+videoFilePath
+    print(videoFilePath)
     videoObj=cv2.VideoCapture(videoFilePath)
     videoObj.open(videoFilePath)
     fps=ceil(videoObj.get(cv2.CAP_PROP_FPS))
-    height=int(videoObj.get(cv2.CAP_PROP_FRAME_HEIGHT))*scale
-    width=int(videoObj.get(cv2.CAP_PROP_FRAME_WIDTH))*scale
+    height=int(videoObj.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    width=int(videoObj.get(cv2.CAP_PROP_FRAME_WIDTH))
     fourcc = cv2.VideoWriter_fourcc(*'MP4V')
     frameCount=int(videoObj.get(cv2.CAP_PROP_FRAME_COUNT))
-    # print(width,height,fourcc,fps)
-    upsampledVideoObj= cv2.VideoWriter('output.mp4',fourcc,fps,(width,height)) 
-    if scale==4:
-        MODEL_PATH="FSRCNN_x4.pb"
-    elif scale==3:
-        MODEL_PATH="FSRCNN_x3.pb"
+    MODEL_PATH=os.path.join(settings.BASE_DIR,'static\\models\\')
+    print(width,height,fourcc,fps)
+    print(MODEL_PATH)
+    upsampledVideoObj= cv2.VideoWriter(os.path.join(settings.BASE_DIR,'media\\output.mp4'),fourcc,fps,(width*scale,height*scale)) 
+    if scale==2:
+        MODEL_PATH+="FSRCNN_x4.pb"
+    elif scale==1:
+        MODEL_PATH+="FSRCNN_x3.pb"
     else:
-        MODEL_PATH="FSRCNN_x2.pb"
+        MODEL_PATH+="FSRCNN_x2.pb"
     f=1
     k=1
+    scale+=2
+    global progress_percent
     while k<=frameCount:
         f,imgFrame=videoObj.read()
         upsampledFrame=upsampleFSRCNN(MODEL_PATH,imgFrame,scale)
         upsampledVideoObj.write(upsampledFrame)
-        progress_percent=k/frameCount
-        progress_percent=progress_percent
-        print(k)
+        progress_percent=(k/frameCount)*100
+        print(progress_percent)
         k+=1
     upsampledVideoObj.release()
     videoObj.release()
@@ -82,10 +90,24 @@ def upsamplevideo(videoFilePath,scale):
 def startprocess(request):
     scaleFactor=request.POST["scalingValue"]
     scaleFactor=int(scaleFactor)
-    upsamplevideo()
+    global currentScaleFactor
+    currentScaleFactor=scaleFactor
     return render(request,'downloadpage.html')
     upsamplevideo('../media/'+lastFileName,scaleFactor)
 
+def startscaling(request):
+    fs=FileSystemStorage()
+    fileNames=(fs.listdir(''))[1]
+    file=fileNames[0]
+    print(file)
+    upsamplevideo(file,currentScaleFactor)
+    print(progress_percent)
+    return HttpResponse("Success")
+
 def progressupdate(request):
-    return JsonResponse({'progress':progress_percent},safe=False)
+    data={
+        'progress':progress_percent
+    }
+    return JsonResponse(data)
+    return HttpResponse(progress_percent)
     
