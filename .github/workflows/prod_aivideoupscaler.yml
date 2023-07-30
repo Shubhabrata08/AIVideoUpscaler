@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'AIVideoUpscaler'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EEAE5AAE0FB843CC835B0BB90BA8E2CF }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E425340F85084819A3ABAF78EAFCE2D5 }}
