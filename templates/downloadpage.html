@@ -42,8 +42,8 @@
         url: '/progressupdate/', 
         success: function(data) {
             console.log(data['progress'])
-            // percentage=JSON.stringify(data)
-            // console.log(percentage)
+            percentage=JSON.stringify(data)
+            console.log(percentage)
             var num=parseInt(data['progress'])
             console.log(num)
             document.getElementById("AIProgress").style.width=(String(num).concat("%"))

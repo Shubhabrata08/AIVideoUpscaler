@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
+from AIVideoUpscaler.settings import BASE_DIR
 import cv2
 from math import ceil
 from cv2 import INTER_LINEAR
@@ -26,12 +27,16 @@ def upscale(request):
         print(uploaded_file.size)
         lastFileName=uploaded_file.name
         fs=FileSystemStorage()
-        fileList=fs.listdir('')
+        fileList=fs.listdir(os.path.join(BASE_DIR,'media/'))
+        print(os.path.join(BASE_DIR,'media/'))
+        print(fileList)
+        
         for file in fileList[1]:
             # print(file)
             if fs.exists(file):
                 fs.delete(file)
         fs.save(uploaded_file.name,uploaded_file)
+        print(uploaded_file.name)
         # fs.delete(uploaded_file.name)
         return render(request,'about.html')
     return render(request,'upscale.html')
@@ -53,12 +58,12 @@ def upsampleFSRCNN(modelPath,img,scale):
     return result
 def upsamplevideo(videoFilePath,scale):
     fs=FileSystemStorage()
-    fileList=fs.listdir('')
+    fileList=fs.listdir(os.path.join(settings.BASE_DIR,'media/'))
     for fl in fileList[1]:
         # print(file)
         if fs.exists(fl) and fl!=videoFilePath:
             fs.delete(fl)
-    extraFilePath=os.path.join(settings.BASE_DIR,'media\\')
+    extraFilePath=os.path.join(settings.BASE_DIR,'media/')
     videoFilePath=extraFilePath+videoFilePath
     print(videoFilePath)
     videoObj=cv2.VideoCapture(videoFilePath)
@@ -80,7 +85,7 @@ def upsamplevideo(videoFilePath,scale):
     f=1
     k=1
     scale+=2
-    upsampledVideoObj= cv2.VideoWriter(os.path.join(settings.BASE_DIR,'media\\output.mp4'),fourcc,fps,(int(width*scale),int(height*scale))) 
+    upsampledVideoObj= cv2.VideoWriter(os.path.join(settings.BASE_DIR,'media/output.mp4'),fourcc,fps,(int(width*scale),int(height*scale))) 
     global progress_percent
     while k<=frameCount:
         f,imgFrame=videoObj.read()
@@ -101,12 +106,13 @@ def startprocess(request):
     scaleFactor=int(scaleFactor)
     global currentScaleFactor
     currentScaleFactor=scaleFactor
+    upsamplevideo(lastFileName,scaleFactor)
     return render(request,'downloadpage.html')
-    upsamplevideo('../media/'+lastFileName,scaleFactor)
 
 def startscaling(request):
     fs=FileSystemStorage()
-    fileNames=(fs.listdir(''))[1]
+    fileNames=(fs.listdir(os.path.join(settings.BASE_DIR,'media/')))[1]
+    print(fs.listdir(os.path.join(settings.BASE_DIR,'media/')))
     file=fileNames[0]
     print(file)
     if(file=="output.mp4"):
@@ -123,7 +129,7 @@ def progressupdate(request):
     return HttpResponse(progress_percent)
     
 def download_file(request):
-    file_path = os.path.join(settings.BASE_DIR,'media\\')
+    file_path = os.path.join(settings.BASE_DIR,'media/')
     filename = "output.mp4"
     file_path+=filename
     fl = open(file_path, 'r',errors="ignore")
